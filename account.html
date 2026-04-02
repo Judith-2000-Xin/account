@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小資生活週記帳本</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --food: #fab1a0;
+            --drink: #ffeaa7;
+            --transport: #81ecec;
+            --life: #a29bfe;
+            --other: #dfe6e9;
+            --bg: #f0f2f5;
+        }
+
+        body {
+            font-family: 'PingFang TC', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .summary-card span { font-size: 36px; font-weight: 800; }
+
+        .input-area {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 20px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .category-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #636e72;
+            margin: 10px 0 5px 5px;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 12px 5px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.1s;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        button:active { transform: scale(0.92); filter: brightness(0.9); }
+
+        /* 類別配色 */
+        .btn-food { background-color: var(--food); }
+        .btn-drink { background-color: var(--drink); }
+        .btn-trans { background-color: var(--transport); }
+        .btn-life { background-color: var(--life); }
+        .btn-other { background-color: var(--other); }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #fff;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 6px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .item-info { font-size: 14px; }
+        .item-date { font-size: 10px; color: #b2bec3; display: block; }
+        .item-price { font-weight: bold; color: #2d3436; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="summary-card">
+        <p style="margin:0; opacity: 0.9;">本週累計支出</p>
+        $ <span id="total-amount">0</span>
+    </div>
+
+    <div class="input-area">
+        <input type="number" id="price-input" placeholder="輸入金額" inputmode="decimal">
+        
+        <div class="category-label">🍱 填飽肚子</div>
+        <div class="btn-grid">
+            <button class="btn-food" onclick="saveRecord('早餐')">早餐</button>
+            <button class="btn-food" onclick="saveRecord('午餐')">午餐</button>
+            <button class="btn-food" onclick="saveRecord('晚餐')">晚餐</button>
+            <button class="btn-food" onclick="saveRecord('宵夜')">宵夜</button>
+            <button class="btn-food" onclick="saveRecord('水果/零食')">零嘴</button>
+            <button class="btn-food" onclick="saveRecord('外送費')">🛵 外送</button>
+        </div>
+
+        <div class="category-label">☕ 喝一杯</div>
+        <div class="btn-grid">
+            <button class="btn-drink" onclick="saveRecord('手搖飲')">手搖</button>
+            <button class="btn-drink" onclick="saveRecord('咖啡')">咖啡</button>
+            <button class="btn-drink" onclick="saveRecord('超商飲料')">超商</button>
+        </div>
+
+        <div class="category-label">🏠 日常與交通</div>
+        <div class="btn-grid">
+            <button class="btn-trans" onclick="saveRecord('公車/捷運')">公車捷運</button>
+            <button class="btn-trans" onclick="saveRecord('計程車')">計程車</button>
+            <button class="btn-trans" onclick="saveRecord('加油')">加油</button>
+            <button class="btn-life" onclick="saveRecord('日用品')">日用品</button>
+            <button class="btn-life" onclick="saveRecord('文具/影印')">論文/影印</button>
+            <button class="btn-life" onclick="saveRecord('娛樂')">電影/K歌</button>
+        </div>
+
+        <div class="category-label">💬 其他</div>
+        <div class="btn-grid">
+            <button class="btn-other" onclick="saveRecord('藥妝/美妝')">藥妝/醫美</button>
+            <button class="btn-other" onclick="saveRecord('訂閱服務')">Spotify/APP</button>
+            <button class="btn-other" onclick="saveRecord('哩哩摳摳')">哩哩摳摳</button>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="margin: 0 0 10px 5px;">本週明細</h4>
+        <button onclick="clearAll()" style="color:red; background:none; box-shadow:none; font-size:12px;">全部重設</button>
+    </div>
+    <ul id="history" class="history-list"></ul>
+</div>
+
+<script>
+    let records = JSON.parse(localStorage.getItem('my_wallet_v2')) || [];
+    render();
+
+    function saveRecord(category) {
+        const input = document.getElementById('price-input');
+        const price = parseFloat(input.value);
+
+        if (!price || price <= 0) {
+            alert("先輸入金額再按分類喔！");
+            return;
+        }
+
+        const newRecord = {
+            id: Date.now(),
+            cat: category,
+            val: price,
+            time: new Date().getTime()
+        };
+
+        records.push(newRecord);
+        localStorage.setItem('my_wallet_v2', JSON.stringify(records));
+        input.value = '';
+        render();
+    }
+
+    function render() {
+        const list = document.getElementById('history');
+        const totalDisplay = document.getElementById('total-amount');
+        list.innerHTML = '';
+
+        const now = Date.now();
+        const oneWeek = 7 * 24 * 60 * 60 * 1000;
+        
+        // 只顯示一週內
+        const weekly = records.filter(r => (now - r.time) < oneWeek)
+                             .sort((a,b) => b.time - a.time);
+
+        let total = 0;
+        weekly.forEach(r => {
+            total += r.val;
+            const d = new Date(r.time);
+            const li = document.createElement('li');
+            
+            // 根據類別給顏色
+            let color = "#dfe6e9";
+            if(["早餐","午餐","晚餐","宵夜","水果/零食","外送費"].includes(r.cat)) color = "#fab1a0";
+            if(["手搖飲","咖啡","超商飲料"].includes(r.cat)) color = "#ffeaa7";
+            if(["公車/捷運","計程車","加油"].includes(r.cat)) color = "#81ecec";
+
+            li.style.borderLeftColor = color;
+            li.innerHTML = `
+                <div class="item-info">
+                    <span class="item-date">${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}</span>
+                    <strong>${r.cat}</strong>
+                </div>
+                <div class="item-price">$${r.val.toLocaleString()}</div>
+            `;
+            list.appendChild(li);
+        });
+
+        totalDisplay.innerText = total.toLocaleString();
+    }
+
+    function clearAll() {
+        if(confirm("確定要刪除所有紀錄嗎？")) {
+            records = [];
+            localStorage.removeItem('my_wallet_v2');
+            render();
+        }
+    }
+</script>
+
+</body>
+</html>
