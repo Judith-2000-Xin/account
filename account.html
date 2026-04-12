@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小資生活週記帳本</title>
+    <title>小資生活月記帳本</title>
     <style>
         :root {
             --primary: #6c5ce7;
@@ -124,7 +124,7 @@
 
 <div class="container">
     <div class="summary-card">
-        <p style="margin:0; opacity: 0.9;">本週累計支出</p>
+        <p style="margin:0; opacity: 0.9;"><span id="current-month-label" style="font-size:16px; font-weight:normal;">本</span>月累計支出</p>
         $ <span id="total-amount">0</span>
     </div>
 
@@ -167,14 +167,15 @@
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h4 style="margin: 0 0 10px 5px;">本週明細</h4>
-        <button onclick="clearAll()" style="color:red; background:none; box-shadow:none; font-size:12px;">全部重設</button>
+        <h4 style="margin: 0 0 10px 5px;">本月明細</h4>
+        <button onclick="clearAll()" style="color:red; background:none; box-shadow:none; font-size:12px;">清除所有資料</button>
     </div>
     <ul id="history" class="history-list"></ul>
 </div>
 
 <script>
-    let records = JSON.parse(localStorage.getItem('my_wallet_v2')) || [];
+    // 換了一個新的儲存名稱 my_wallet_monthly 避免跟舊的打架
+    let records = JSON.parse(localStorage.getItem('my_wallet_monthly')) || [];
     render();
 
     function saveRecord(category) {
@@ -194,7 +195,7 @@
         };
 
         records.push(newRecord);
-        localStorage.setItem('my_wallet_v2', JSON.stringify(records));
+        localStorage.setItem('my_wallet_monthly', JSON.stringify(records));
         input.value = '';
         render();
     }
@@ -202,22 +203,28 @@
     function render() {
         const list = document.getElementById('history');
         const totalDisplay = document.getElementById('total-amount');
+        const monthLabel = document.getElementById('current-month-label');
         list.innerHTML = '';
 
-        const now = Date.now();
-        const oneWeek = 7 * 24 * 60 * 60 * 1000;
-        
-        // 只顯示一週內
-        const weekly = records.filter(r => (now - r.time) < oneWeek)
-                             .sort((a,b) => b.time - a.time);
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 程式裡的月份是 0~11
+
+        // 讓標題顯示現在是幾月
+        monthLabel.innerText = `${currentMonth + 1}`;
+
+        // 核心邏輯：只抓出「年份」跟「月份」與現在相同的紀錄
+        const monthlyRecords = records.filter(r => {
+            const d = new Date(r.time);
+            return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+        }).sort((a,b) => b.time - a.time);
 
         let total = 0;
-        weekly.forEach(r => {
+        monthlyRecords.forEach(r => {
             total += r.val;
             const d = new Date(r.time);
             const li = document.createElement('li');
             
-            // 根據類別給顏色
             let color = "#dfe6e9";
             if(["早餐","午餐","晚餐","宵夜","水果/零食","外送費"].includes(r.cat)) color = "#fab1a0";
             if(["手搖飲","咖啡","超商飲料"].includes(r.cat)) color = "#ffeaa7";
@@ -238,9 +245,9 @@
     }
 
     function clearAll() {
-        if(confirm("確定要刪除所有紀錄嗎？")) {
+        if(confirm("確定要刪除系統內【所有】的紀錄嗎？這個動作無法復原喔！")) {
             records = [];
-            localStorage.removeItem('my_wallet_v2');
+            localStorage.removeItem('my_wallet_monthly');
             render();
         }
     }
