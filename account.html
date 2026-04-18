@@ -6,36 +6,204 @@
     <title>小資生活月記帳本 (防呆加強版)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* CSS 樣式完全相同，為了篇幅精簡，這部分不變 */
-        :root { --primary: #6c5ce7; --food: #fab1a0; --drink: #ffeaa7; --transport: #81ecec; --life: #a29bfe; --other: #dfe6e9; --bg: #f0f2f5; }
-        body { font-family: 'PingFang TC', sans-serif; background-color: var(--bg); display: flex; justify-content: center; padding: 15px; margin: 0; }
-        .container { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        .summary-card { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
-        .summary-card span { font-size: 36px; font-weight: 800; }
-        .input-area { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
-        input[type="number"] { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 20px; box-sizing: border-box; margin-bottom: 15px; text-align: center; }
-        .category-label { font-size: 14px; font-weight: bold; color: #636e72; margin: 10px 0 5px 5px; }
-        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-        button { padding: 12px 5px; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; transition: 0.1s; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #2d3436; }
-        button:active { transform: scale(0.92); filter: brightness(0.9); }
-        .btn-food { background-color: var(--food); } .btn-drink { background-color: var(--drink); } .btn-trans { background-color: var(--transport); } .btn-life { background-color: var(--life); } .btn-other { background-color: var(--other); }
-        .history-list { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; margin-bottom: 20px; }
-        li { padding: 12px; margin-bottom: 8px; background: #fff; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .item-info { font-size: 14px; } .item-date { font-size: 10px; color: #b2bec3; display: block; } .item-price { font-weight: bold; color: #2d3436; }
-        .chart-container { position: relative; height: 250px; width: 100%; margin-top: 10px; background: #f8f9fa; border-radius: 15px; padding: 10px; box-sizing: border-box; }
+        :root {
+            --primary: #6c5ce7;
+            --food: #fab1a0;
+            --drink: #ffeaa7;
+            --transport: #81ecec;
+            --life: #a29bfe;
+            --other: #dfe6e9;
+            --bg: #f0f2f5;
+        }
+
+        body {
+            font-family: "PingFang TC", sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .summary-card span {
+            font-size: 36px;
+            font-weight: 800;
+        }
+
+        .input-area {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 20px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .category-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #636e72;
+            margin: 10px 0 5px 5px;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 12px 5px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.1s;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            color: #2d3436;
+        }
+
+        button:active {
+            transform: scale(0.92);
+            filter: brightness(0.9);
+        }
+
+        .btn-food { background-color: var(--food); }
+        .btn-drink { background-color: var(--drink); }
+        .btn-trans { background-color: var(--transport); }
+        .btn-life { background-color: var(--life); }
+        .btn-other { background-color: var(--other); }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            max-height: 260px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #fff;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 6px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            gap: 8px;
+        }
+
+        .item-info {
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .item-date {
+            font-size: 10px;
+            color: #b2bec3;
+            display: block;
+            margin-top: 3px;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #2d3436;
+            white-space: nowrap;
+            margin-right: 8px;
+        }
+
+        .delete-btn {
+            background: #ff7675;
+            color: white;
+            padding: 8px 10px;
+            font-size: 12px;
+            border-radius: 8px;
+            box-shadow: none;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            margin-top: 10px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .empty-text {
+            text-align: center;
+            color: #999;
+            padding: 20px 0;
+            font-size: 14px;
+        }
+
+        .action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0 5px 0;
+        }
+
+        .clear-btn {
+            background: #636e72;
+            color: white;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+            box-shadow: none;
+        }
+
+        h4 {
+            margin: 0 0 5px 5px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="summary-card">
-        <p style="margin:0; opacity: 0.9;"><span id="current-month-label" style="font-size:16px; font-weight:normal;">本</span>月累計支出</p>
+        <p style="margin:0; opacity:0.9;">
+            <span id="current-month-label" style="font-size:16px; font-weight:normal;">本</span>月累計支出
+        </p>
         $ <span id="total-amount">0</span>
     </div>
 
     <div class="input-area">
-        <input type="number" id="price-input" placeholder="輸入金額" inputmode="decimal">
-        
+        <input type="number" id="price-input" placeholder="輸入金額" inputmode="decimal" min="0">
+
         <div class="category-label">🍱 填飽肚子</div>
         <div class="btn-grid">
             <button type="button" class="btn-food" onclick="saveRecord('早餐')">早餐</button>
@@ -72,7 +240,7 @@
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h4 style="margin: 0 0 5px 5px;">本月支出比例</h4>
+        <h4>本月支出比例</h4>
     </div>
     <div class="chart-container" id="chart-box">
         <canvas id="expenseChart"></canvas>
@@ -80,4 +248,248 @@
 
     <hr style="border: 0; height: 1px; background: #eee; margin: 20px 0;">
 
-    <div style="display: flex; justify-content: space-between; align-
+    <div class="action-row">
+        <h4>本月記帳紀錄</h4>
+        <button class="clear-btn" onclick="clearMonthRecords()">清空本月</button>
+    </div>
+
+    <ul id="history-list" class="history-list"></ul>
+</div>
+
+<script>
+    const STORAGE_KEY = "expense_records_v1";
+    let expenseChart = null;
+
+    const categoryColorMap = {
+        "早餐": "#fab1a0",
+        "午餐": "#fab1a0",
+        "晚餐": "#fab1a0",
+        "宵夜": "#fab1a0",
+        "水果/零食": "#fab1a0",
+        "外送費": "#fab1a0",
+
+        "手搖飲": "#ffeaa7",
+        "咖啡": "#ffeaa7",
+        "超商飲料": "#ffeaa7",
+
+        "公車/捷運": "#81ecec",
+        "計程車": "#81ecec",
+        "加油": "#81ecec",
+
+        "日用品": "#a29bfe",
+        "文具/影印": "#a29bfe",
+        "娛樂": "#a29bfe",
+
+        "藥妝/美妝": "#dfe6e9",
+        "訂閱服務": "#dfe6e9",
+        "哩哩摳摳": "#dfe6e9"
+    };
+
+    function getRecords() {
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+    }
+
+    function setRecords(records) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    }
+
+    function getCurrentMonthKey() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        return `${year}-${month}`;
+    }
+
+    function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        const hh = String(date.getHours()).padStart(2, "0");
+        const mm = String(date.getMinutes()).padStart(2, "0");
+        return `${y}/${m}/${d} ${hh}:${mm}`;
+    }
+
+    function saveRecord(category) {
+        const input = document.getElementById("price-input");
+        const amount = parseFloat(input.value);
+
+        if (input.value.trim() === "" || isNaN(amount)) {
+            alert("請先輸入金額");
+            input.focus();
+            return;
+        }
+
+        if (amount <= 0) {
+            alert("金額必須大於 0");
+            input.focus();
+            return;
+        }
+
+        const records = getRecords();
+
+        const newRecord = {
+            id: Date.now(),
+            category: category,
+            amount: amount,
+            createdAt: new Date().toISOString(),
+            monthKey: getCurrentMonthKey()
+        };
+
+        records.unshift(newRecord);
+        setRecords(records);
+
+        input.value = "";
+        renderAll();
+    }
+
+    function deleteRecord(id) {
+        const records = getRecords().filter(record => record.id !== id);
+        setRecords(records);
+        renderAll();
+    }
+
+    function clearMonthRecords() {
+        const monthKey = getCurrentMonthKey();
+        const records = getRecords();
+        const filtered = records.filter(record => record.monthKey !== monthKey);
+
+        if (!records.some(record => record.monthKey === monthKey)) {
+            alert("本月目前沒有資料可清空");
+            return;
+        }
+
+        if (!confirm("確定要清空本月所有紀錄嗎？")) {
+            return;
+        }
+
+        setRecords(filtered);
+        renderAll();
+    }
+
+    function getCurrentMonthRecords() {
+        const monthKey = getCurrentMonthKey();
+        return getRecords().filter(record => record.monthKey === monthKey);
+    }
+
+    function updateMonthLabel() {
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        document.getElementById("current-month-label").textContent = `${month}`;
+    }
+
+    function renderTotal(records) {
+        const total = records.reduce((sum, record) => sum + Number(record.amount), 0);
+        document.getElementById("total-amount").textContent = total.toFixed(0);
+    }
+
+    function renderHistory(records) {
+        const historyList = document.getElementById("history-list");
+        historyList.innerHTML = "";
+
+        if (records.length === 0) {
+            historyList.innerHTML = `<div class="empty-text">本月還沒有記帳紀錄</div>`;
+            return;
+        }
+
+        records.forEach(record => {
+            const li = document.createElement("li");
+            li.style.borderLeftColor = categoryColorMap[record.category] || "#ddd";
+
+            li.innerHTML = `
+                <div class="item-info">
+                    <strong>${record.category}</strong>
+                    <span class="item-date">${formatDateTime(record.createdAt)}</span>
+                </div>
+                <div class="item-price">$${Number(record.amount).toFixed(0)}</div>
+                <button class="delete-btn" onclick="deleteRecord(${record.id})">刪除</button>
+            `;
+
+            historyList.appendChild(li);
+        });
+    }
+
+    function renderChart(records) {
+        const ctx = document.getElementById("expenseChart").getContext("2d");
+
+        const categorySummary = {};
+        records.forEach(record => {
+            if (!categorySummary[record.category]) {
+                categorySummary[record.category] = 0;
+            }
+            categorySummary[record.category] += Number(record.amount);
+        });
+
+        const labels = Object.keys(categorySummary);
+        const data = Object.values(categorySummary);
+        const colors = labels.map(label => categoryColorMap[label] || "#cccccc");
+
+        if (expenseChart) {
+            expenseChart.destroy();
+        }
+
+        if (labels.length === 0) {
+            expenseChart = new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: ["尚無資料"],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: ["#e0e0e0"],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+            return;
+        }
+
+        expenseChart = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        });
+    }
+
+    function renderAll() {
+        const monthRecords = getCurrentMonthRecords();
+        updateMonthLabel();
+        renderTotal(monthRecords);
+        renderHistory(monthRecords);
+        renderChart(monthRecords);
+    }
+
+    window.onload = function() {
+        renderAll();
+    };
+</script>
+
+</body>
+</html>
