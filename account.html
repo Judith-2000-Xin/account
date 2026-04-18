@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小資生活月記帳本</title>
+    <title>小資生活月記帳本 (含圖表)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #6c5ce7;
@@ -85,11 +86,11 @@
             transition: 0.1s;
             background: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            color: #2d3436;
         }
 
         button:active { transform: scale(0.92); filter: brightness(0.9); }
 
-        /* 類別配色 */
         .btn-food { background-color: var(--food); }
         .btn-drink { background-color: var(--drink); }
         .btn-trans { background-color: var(--transport); }
@@ -99,8 +100,9 @@
         .history-list {
             list-style: none;
             padding: 0;
-            max-height: 250px;
+            max-height: 200px;
             overflow-y: auto;
+            margin-bottom: 20px;
         }
 
         li {
@@ -118,6 +120,18 @@
         .item-info { font-size: 14px; }
         .item-date { font-size: 10px; color: #b2bec3; display: block; }
         .item-price { font-weight: bold; color: #2d3436; }
+
+        /* 圖表區塊樣式 */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            margin-top: 10px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -167,6 +181,15 @@
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="margin: 0 0 5px 5px;">本月支出比例</h4>
+    </div>
+    <div class="chart-container">
+        <canvas id="expenseChart"></canvas>
+    </div>
+
+    <hr style="border: 0; height: 1px; background: #eee; margin: 20px 0;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
         <h4 style="margin: 0 0 10px 5px;">本月明細</h4>
         <button onclick="clearAll()" style="color:red; background:none; box-shadow:none; font-size:12px;">清除所有資料</button>
     </div>
@@ -174,8 +197,9 @@
 </div>
 
 <script>
-    // 換了一個新的儲存名稱 my_wallet_monthly 避免跟舊的打架
     let records = JSON.parse(localStorage.getItem('my_wallet_monthly')) || [];
+    let myChart = null; // 用來儲存圖表的變數
+
     render();
 
     function saveRecord(category) {
@@ -208,50 +232,43 @@
 
         const now = new Date();
         const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth(); // 程式裡的月份是 0~11
+        const currentMonth = now.getMonth(); 
 
-        // 讓標題顯示現在是幾月
         monthLabel.innerText = `${currentMonth + 1}`;
 
-        // 核心邏輯：只抓出「年份」跟「月份」與現在相同的紀錄
         const monthlyRecords = records.filter(r => {
             const d = new Date(r.time);
             return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
         }).sort((a,b) => b.time - a.time);
 
         let total = 0;
+        
+        // 準備給圖表的數據整理箱
+        let chartData = {
+            "填飽肚子": 0,
+            "喝一杯": 0,
+            "日常交通": 0,
+            "其他": 0
+        };
+
         monthlyRecords.forEach(r => {
             total += r.val;
             const d = new Date(r.time);
             const li = document.createElement('li');
             
             let color = "#dfe6e9";
-            if(["早餐","午餐","晚餐","宵夜","水果/零食","外送費"].includes(r.cat)) color = "#fab1a0";
-            if(["手搖飲","咖啡","超商飲料"].includes(r.cat)) color = "#ffeaa7";
-            if(["公車/捷運","計程車","加油"].includes(r.cat)) color = "#81ecec";
-
-            li.style.borderLeftColor = color;
-            li.innerHTML = `
-                <div class="item-info">
-                    <span class="item-date">${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}</span>
-                    <strong>${r.cat}</strong>
-                </div>
-                <div class="item-price">$${r.val.toLocaleString()}</div>
-            `;
-            list.appendChild(li);
-        });
-
-        totalDisplay.innerText = total.toLocaleString();
-    }
-
-    function clearAll() {
-        if(confirm("確定要刪除系統內【所有】的紀錄嗎？這個動作無法復原喔！")) {
-            records = [];
-            localStorage.removeItem('my_wallet_monthly');
-            render();
-        }
-    }
-</script>
-
-</body>
-</html>
+            
+            // 判斷顏色，同時將數據丟進圖表整理箱
+            if(["早餐","午餐","晚餐","宵夜","水果/零食","外送費"].includes(r.cat)) {
+                color = "#fab1a0";
+                chartData["填飽肚子"] += r.val;
+            } else if(["手搖飲","咖啡","超商飲料"].includes(r.cat)) {
+                color = "#ffeaa7";
+                chartData["喝一杯"] += r.val;
+            } else if(["公車/捷運","計程車","加油","日用品","文具/影印","娛樂"].includes(r.cat)) {
+                color = "#81ecec"; // 這邊日常和交通併在一起算
+                chartData["日常交通"] += r.val;
+            } else {
+                color = "#dfe6e9";
+                chartData["其他"] += r.val;
+            }
